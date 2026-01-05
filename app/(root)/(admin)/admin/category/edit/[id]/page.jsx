@@ -1,0 +1,150 @@
+'use client'
+import React, { use, useEffect, useState } from 'react'
+import { ADMIN_CATEGORY_EDIT, ADMIN_CATEGORY_SHOW, ADMIN_DASHBOARD } from '@/routes/AdminPanelRoute'
+import BreadCrumbs from '@/components/Admin/BreadCrumb'
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { zSchema } from '@/lib/zodSchema';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { showToast } from '@/lib/showToast';
+import Image from 'next/image';
+import ButtonLoading from '@/components/Application/ButtonLoading';
+import slugify from 'slugify';
+import axios from 'axios';
+import useFetch from '@/hooks/useFetch';
+
+const breadcrumbData = [
+    { href: ADMIN_DASHBOARD, label: 'Home'},
+    { href: ADMIN_CATEGORY_SHOW, label: 'Category'},
+    { href: '', label: 'Edit Category'}
+]
+
+const EditCategory = ({ params }) => {
+    const { id } = use(params)
+    const {data: categoryData} = useFetch(`/api/category/get/${id}`)
+
+    const [loading, setLoading] = useState(false)
+    const formSchema = zSchema.pick({
+        _id: true,
+        name: true,
+        slug: true
+        // password: true
+      });
+    
+      const form = useForm({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+          _id: id,
+          name:'',
+          slug:''
+        },
+      });
+    
+    useEffect(()=>{
+      if(categoryData && categoryData.success){
+        const data = categoryData.data
+        console.log(data)
+        form.reset({
+          _id: data?._id,
+          name: data?.name,
+          slug:data?.slug,
+        })
+      }
+    },[categoryData])
+
+    useEffect(()=>{
+        const name = form.getValues('name')
+        if(name){
+          form.setValue('slug',slugify(name).toLowerCase())
+        }
+    },[form.watch('name')])
+
+    const onSubmit = async(values) =>{
+      setLoading(true)
+      try {
+        const{data: response} = await axios.put('/api/category/update', values)
+        if(!response.success) throw new Error(response.message);
+        // form.reset()
+        showToast('success', response.message)
+      } catch (error) {
+        showToast(error)
+      }finally{
+        setLoading(false)
+      }
+    }
+
+  return (
+    <div>
+        <BreadCrumbs breadcrumbData={breadcrumbData}/>
+        <Card className="py-0 rounded shadow-sm">
+        <CardHeader className="pt-3 px-3 border-b [.border-b]:pb-2">
+          <h4 className=" font-semibold text-xl">Edit Category</h4>
+        </CardHeader>
+        <CardContent className="pb-5">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              
+              
+              <div className="mb-5">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Enter Category Name"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="mb-5">
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Slug</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Enter Category Slug"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="mb-3">
+                <ButtonLoading
+                  loading={loading}
+                  type="submit"
+                  text="Update Category"
+                ></ButtonLoading>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default EditCategory
