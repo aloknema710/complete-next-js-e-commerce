@@ -35,6 +35,10 @@ const ProductSchema = new mongoose.Schema({
         ref: 'Media',
         required: true
     }],
+    description: {
+        type: String,
+        required: true,
+    },
     deletedAt: {
         type: Date,
         default: null,

@@ -15,6 +15,9 @@ import {
 import useWindowSize from '@/hooks/useWindowSize'
 import axios from 'axios'
 import { useSearchParams } from 'next/navigation'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import ProductBox from '@/components/Website/ProductBox'
+import ButtonLoading from '@/components/Application/ButtonLoading'
 
 const breadcrumb = {
   title: 'Shop',
@@ -39,6 +42,17 @@ const Shop = () => {
     }
 
     // fetchProducts(0)
+
+    const {error, data, isFetching, fetchNextPage, hasNextPage} = useInfiniteQuery({
+      queryKey:['products',limit, sorting, searchParams],
+      queryFn: async({pageParam})=>await fetchProducts(pageParam),
+      initialPageParam: 0,
+      getNextPageParam:(lastPage)=>{
+        return lastPage.nextPage
+      }
+    })
+    console.log(data)
+
   return (
     <div>
         <WebsiteBreadCrumb props={breadcrumb}/>
@@ -71,6 +85,26 @@ const Shop = () => {
 
             <div className='lg:w-[calc(100%-18rem)]'>
               <Shorting limit={limit} setLimit={setLimit} sorting={sorting} setSorting={setSorting} mobileFilterOpen={isMobileFilter} setMobileFilterOpen={setIsMobileFilter}/>
+              {isFetching && <div className='p-3 font-semibold text-center'>Loading...</div>}
+              {error && <div className='p-3 font-semibold text-center'>{error.message}</div>}
+
+              <div className='grid lg:grid-cols-3 grid-cols-2 lg:gap-10 gap-5 mt-10'>
+                  {data && data.pages.map(page=>(
+                      page.products.map(product=>(
+                        <ProductBox key={product._id} product={product}/>
+                      ))
+                  ))}
+              </div>
+
+
+              <div className=' flex justify-center mt-10'>
+                  {hasNextPage ?
+                    <ButtonLoading type="button" loading={isFetching} text={'Load More'} onClick={fetchNextPage}/>:
+                    <>
+                      {!isFetching && <span>No more data to load</span>}
+                    </>
+                  }
+              </div>
             </div>
         </section>
     </div>

@@ -2,6 +2,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { persistReducer } from 'redux-persist';
 import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
 import authReducer from './reducer/authReducer';
+import cartReducer from './reducer/cartReducer'; 
 
 // ✅ Avoid using localStorage on server
 const createNoopStorage = () => {
@@ -29,6 +30,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   authStore: authReducer,
+  cartStore: cartReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
