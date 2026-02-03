@@ -45,7 +45,7 @@ const ProductDetail = ({ product, variant, colors, sizes, reviewCount }) => {
         setIsAddedIntoCart(false)
       }
     }
-  },[])
+  },[cartStore.products, product, variant])
 
   if (!product) return null   // 🔥 prevents undefined logs
 

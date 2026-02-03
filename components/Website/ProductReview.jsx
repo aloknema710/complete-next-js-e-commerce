@@ -24,6 +24,7 @@ import { showToast } from '@/lib/showToast'
 import axios from 'axios'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import ReviewList from './ReviewList'
+import useFetch from '@/hooks/useFetch'
 // ButtonLoading
 
 const ProductReview = ({productId}) => {
@@ -34,7 +35,19 @@ const ProductReview = ({productId}) => {
     const [loading, setLoading] = useState(false)
     const [currentUrl, setCurrentUrl] = useState('')
     const [isReview, setIsReview] = useState(false)
+    const [reviewCount, setReviewCount] = useState()
     const QueryClient = useQueryClient()
+
+    const {data: reviewDetails} = useFetch(`/api/review/details?productId=${productId}`)
+    console.log('rd:',reviewDetails)
+
+        useEffect(() => {
+          if(reviewDetails && reviewDetails.success){
+            const reviewCountData = reviewDetails.data
+            setReviewCount(reviewCountData)
+            }
+          },[reviewDetails])
+        
 
         useEffect(()=>{
             if(typeof window !== 'undefined') setCurrentUrl(window.location.href)
@@ -114,7 +127,7 @@ const ProductReview = ({productId}) => {
                 <div className='md:w-1/2 w-full md:flex md:gap-10 md:mb-0 mb-5'>
                     
                     <div className='md:w-[200px] w-full md:mb-0 mb-5'>
-                        <h4 className='text-center text-8xl font-semibold'>0.0</h4>
+                        <h4 className='text-center text-8xl font-semibold'>{reviewCount?.averageRating}</h4>
                         <div className=' flex justify-center gap-2'>
                             <IoStar/>
                             <IoStar/>
@@ -123,7 +136,11 @@ const ProductReview = ({productId}) => {
                             <IoStar/>
                         </div>
 
-                        <p className='text-center mt-3'>(0 Ratings & Reviews)</p>
+                        {/* <p className='text-center mt-3'>{reviewDetails?.totalReview}(Ratings & Reviews)</p> */}
+                          <p className='text-center mt-3'>
+                              {reviewCount?.totalReview} Ratings & Reviews
+                            </p>
+
                     </div>
 
                     <div className=' md:w-[calc(100%-200px)] flex items-center'>
@@ -134,8 +151,8 @@ const ProductReview = ({productId}) => {
                                         <p className=' w-3'>{rating}</p>
                                         <IoStar/>
                                     </div>
-                                    <Progress value={20}/>
-                                    <span className=' text-sm'>20</span>
+                                    <Progress value={reviewCount?.percentage[rating]}/>
+                                    <span className=' text-sm'>{reviewCount?.rating[rating]}</span>
                                 </div>
                             ))}
                             
@@ -246,6 +263,10 @@ const ProductReview = ({productId}) => {
                           </div>
                         ))
                     ))}
+
+                    {hasNextPage &&
+                      <ButtonLoading text="Load More" type="Button" loading={isFetching} onClick={fetchNextPage}/>
+                    }
                 </div>
             </div>
         </div>
