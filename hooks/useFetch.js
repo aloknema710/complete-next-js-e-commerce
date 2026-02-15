@@ -2,6 +2,50 @@
 import axios from "axios"
 import { useState, useMemo, useEffect } from "react"
 
+// const useFetch = (url, method = 'GET', options = {}) => {
+//   const [data, setData] = useState(null)
+//   const [loading, setLoading] = useState(false)
+//   const [error, setError] = useState(null)
+//   const [refreshIndex, setRefreshIndex] = useState(0)
+
+//   const optionsString = JSON.stringify(options)
+
+//   const requestOptions = useMemo(() => {
+//     return options
+//   }, [optionsString])
+
+//   useEffect(() => {
+//     if (!url) return
+
+//     const apiCall = async () => {
+//       setLoading(true)
+//       setError(null)
+//       try {
+//         const { data: response } = await axios({
+//           url,
+//           method,
+//           data: requestOptions
+//         })
+
+//         if (!response?.success) {
+//           throw new Error(response?.message || 'Request failed')
+//         }
+
+//         setData(response)
+//       } catch (err) {
+//         setError(err.message)
+//       } finally {
+//         setLoading(false)
+//       }
+//     }
+
+//     apiCall()
+//   }, [url, method, refreshIndex, requestOptions])
+
+//   return { data, loading, error }
+// }
+
+
 const useFetch = (url, method = 'GET', options = {}) =>{
     const [data, setData] = useState(null)
     const [loading, setLoading] = useState(false)   

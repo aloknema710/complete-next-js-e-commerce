@@ -30,7 +30,7 @@ import useFetch from '@/hooks/useFetch'
 const ProductReview = ({productId}) => {
 
     const auth = useSelector(store=>store.authStore.auth)
-    console.log('AUTH IN REVIEW COMPONENT:', auth.data.user.id)
+    console.log('AUTH IN REVIEW COMPONENT:', auth?.data?.user?.id)
 
     const [loading, setLoading] = useState(false)
     const [currentUrl, setCurrentUrl] = useState('')

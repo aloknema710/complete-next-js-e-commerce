@@ -27,15 +27,32 @@
     const cart = useSelector(store=>store.cartStore)
     const dispatch = useDispatch()
 
-    useEffect(()=>{
-      const cartProducts = cart.products
-      const totalAmount = cartProducts.reduce((sum, product)=>sum + (product.sellingPrice * product.qty),0)
-      const discount = cartProducts.reduce((sum, product)=>sum + (product.mrp - product.sellingPrice) * product.qty,0)
-      setSubTotal(totalAmount)
-      setDiscount(discount)
-    },[cart])
+    // useEffect(()=>{
+    //   const cartProducts = cart.products
+    //   const totalAmount = cartProducts.reduce((sum, product)=>sum + (product.sellingPrice * product.qty),0)
+    //   const discount = cartProducts.reduce((sum, product)=>sum + (product.mrp - product.sellingPrice) * product.qty,0)
+    //   setSubTotal(totalAmount)
+    //   setDiscount(discount)
+    // },[cart])
 
-    // console.log("cart",cart)
+  useEffect(() => {
+  const cartProducts = cart.products ?? []
+  const totalAmount = cartProducts.reduce(
+    (sum, product) => sum + product.sellingPrice * product.qty,
+    0
+  )
+  const discount = cartProducts.reduce(
+    (sum, product) =>
+      sum + (product.mrp - product.sellingPrice) * product.qty,
+    0
+  )
+
+  setSubTotal(totalAmount)
+  setDiscount(discount)
+}, [cart])
+
+
+    console.log("cart",cart)
     return (
       <Sheet className="relative" open={open} onOpenChange={setOpen}>
 
@@ -53,14 +70,14 @@
           <BsCart2 size={25} className='text-gray-500 hover:text-primary'/>
           <span className='absolute bg-red-500 text-white text-xs rounded-full w-4 h-4 flex justify-center items-center -right-2 -top-1'>{cart.count}</span>
       </SheetTrigger> */}
-      <SheetContent>
-        <SheetHeader>
+      <SheetContent className={"sm:max-w-[450px] w-full"}>
+        <SheetHeader className={"py-2"}>
           <SheetTitle className='text-2xl'>My Cart</SheetTitle>
           <SheetDescription></SheetDescription>
         </SheetHeader>
         <div className='h-[calc(100vh - 40px)] pb-10 pt-2'>
             <div className='h-[calc(100% - 120px)] overflow-auto px-2'>
-                {cart.products.length === 0 && <div className='h-full flex justify-center items-center text-xl font-semibold'>
+                {cart.products?.length === 0 && <div className='h-full flex justify-center items-center text-xl font-semibold'>
                       Your Cart is Empty
                   </div>}
                 {cart.products?.map(product=>(

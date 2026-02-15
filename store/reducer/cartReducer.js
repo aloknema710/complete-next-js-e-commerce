@@ -7,23 +7,58 @@ export const cartReducer = createSlice({
     name: 'cartStore',
     initialState,
     reducers: {
-        addInToCart:(state, action)=>{
-            const payload = action.payload
-            const existingProduct = state.products.findIndex((product)=> product.productId === payload.productId
-                            && product.variantId === payload.variantId)
-            if(existingProduct < 0){
-                state.products.push(payload)
-                state.count = state.products.length
-            }
-        },
-        increaseQuantity: (state, action)=>{
-            const {productId, variantId} = action.payload
-            const existingProduct = state.products.findIndex((product)=> product.productId === productId
-                            && product.variantId === variantId)
-            if(existingProduct >= 0){
-                state.products[existingProduct].qty += 1
-            }
-        },
+        // addInToCart:(state, action)=>{
+        //     const payload = action.payload
+        //     const existingProduct = state.products.findIndex((product)=> product.productId === payload.productId
+        //                     && product.variantId === payload.variantId)
+        //     if(existingProduct < 0){
+        //         state.products.push(payload)
+        //         state.count = state.products.length
+        //     }
+        // },
+        addInToCart: (state, action) => {
+  const payload = action.payload;
+
+  // 🚨 guard clause
+  if (!payload || !payload.productId || !payload.variantId) return;
+
+  // clean existing junk
+  state.products = state.products.filter(Boolean);
+
+  const existingProduct = state.products.findIndex(
+    (product) =>
+      product.productId === payload.productId &&
+      product.variantId === payload.variantId
+  );
+
+  if (existingProduct < 0) {
+    state.products.push(payload);
+    state.count = state.products.length;
+  }
+},
+
+        // increaseQuantity: (state, action)=>{
+        //     const {productId, variantId} = action.payload
+        //     const existingProduct = state.products.findIndex((product)=> product.productId === productId
+        //                     && product.variantId === variantId)
+        //     if(existingProduct >= 0){
+        //         state.products[existingProduct].qty += 1
+        //     }
+        // },
+
+        increaseQuantity: (state, action) => {
+  state.products = state.products.filter(Boolean);
+
+  const { productId, variantId } = action.payload;
+  const index = state.products.findIndex(
+    (p) => p.productId === productId && p.variantId === variantId
+  );
+
+  if (index >= 0) {
+    state.products[index].qty += 1;
+  }
+},
+
         decreaseQuantity: (state, action)=>{
             const {productId, variantId} = action.payload
             const existingProduct = state.products.findIndex((product)=> product.productId === productId
@@ -51,3 +86,5 @@ decreaseQuantity,
 removeFromCart,
 clearCart } = cartReducer.actions;
 export default cartReducer.reducer;
+
+
