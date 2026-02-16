@@ -7,5 +7,6 @@ export const WEBSITE_ROUTE = {
   SHOP:'/shop',
   PRODUCT_DETAILS: (slug) => slug ? `/product/${slug}` : `/product`,
   CART:'/cart',
-  CHECKOUT: "/checkout"
+  CHECKOUT: "/checkout",
+  ORDER_DETAILS: (order_id) => `/order-details/${order_id}`
 }

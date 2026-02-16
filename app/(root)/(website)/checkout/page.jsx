@@ -1,130 +1,166 @@
-'use client'
+"use client";
 
-import ButtonLoading from '@/components/Application/ButtonLoading'
-import { Button } from '@/components/ui/button'
+import ButtonLoading from "@/components/Application/ButtonLoading";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import WebsiteBreadCrumb from '@/components/Website/WebsiteBreadCrumb'
-import useFetch from '@/hooks/useFetch'
-import { showToast } from '@/lib/showToast'
-import { zSchema } from '@/lib/zodSchema'
-import { WEBSITE_ROUTE } from '@/routes/WebsiteRoute'
-import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
-import Image from 'next/image'
-import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { FaShippingFast } from 'react-icons/fa'
-import { IoCloseCircleSharp } from 'react-icons/io5'
-import { useDispatch, useSelector } from 'react-redux'
-import z from 'zod'
+} from "@/components/ui/form";
+import loading from '@/public/assets/images/loading.svg'
+
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import WebsiteBreadCrumb from "@/components/Website/WebsiteBreadCrumb";
+import useFetch from "@/hooks/useFetch";
+import { showToast } from "@/lib/showToast";
+import { zSchema } from "@/lib/zodSchema";
+import { WEBSITE_ROUTE } from "@/routes/WebsiteRoute";
+import { clearCart } from "@/store/reducer/cartReducer";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Script from "next/script";
+// import Razorpay from "razorpay";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { FaShippingFast } from "react-icons/fa";
+import { IoCloseCircleSharp } from "react-icons/io5";
+import { useDispatch, useSelector } from "react-redux";
+import z from "zod";
 
 const breadCrumb = {
-  title: 'Checkout',
-  links: [{ label: 'Checkout' }],
-}
+  title: "Checkout",
+  links: [{ label: "Checkout" }],
+};
 
 const Checkout = () => {
-  const dispatch = useDispatch()
-  const cart = useSelector((store) => store.cartStore)
-  const auth = useSelector((store) => store.authStore)
+  const router = useRouter()
+  const dispatch = useDispatch();
+  const cart = useSelector((store) => store.cartStore);
+  const auth = useSelector((store) => store.authStore);
+  console.log('Auth in checkout page:', auth)
 
-  const [verifiedCartData, setVerifiedCartData] = useState([])
-  const [subtotal, setSubtotal] = useState(0)
-  const [discount, setDiscount] = useState(0)
-  const [couponDiscountAmount, setCouponDiscountAmount] = useState(0)
-  const [totalAmount, setTotalAmount] = useState(0)
+  const [savingOrder,setSavingOrder]= useState(false)
+  const [verifiedCartData, setVerifiedCartData] = useState([]);
+  const [subtotal, setSubtotal] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [couponDiscountAmount, setCouponDiscountAmount] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
 
-  const [isCouponApplied, setIsCouponApplied] = useState(false)
-  const [couponLoading, setCouponLoading] = useState(false)
-  const [couponCode, setCouponCode] = useState('')
-  const [placingOrder, setPlacingOrder] = useState(false)
+  const [isCouponApplied, setIsCouponApplied] = useState(false);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [placingOrder, setPlacingOrder] = useState(false);
 
   /* ---------------- CART VERIFICATION ---------------- */
 
   const { data: getVerifiedCartData } = useFetch(
-    '/api/cart-verification',
-    'POST',
-    { data: cart.products }
-  )
-
+    "/api/cart-verification",
+    "POST",
+    { data: cart.products },
+  );
+  // console.log('id',process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID);
   useEffect(() => {
     if (getVerifiedCartData?.success) {
-      setVerifiedCartData(getVerifiedCartData.data)
+      setVerifiedCartData(getVerifiedCartData.data);
     }
-  }, [getVerifiedCartData])
+  }, [getVerifiedCartData]);
 
   /* ---------------- TOTAL CALCULATION ---------------- */
 
   useEffect(() => {
     const subTotalAmount = cart.products.reduce(
       (sum, p) => sum + p.sellingPrice * p.qty,
-      0
-    )
+      0,
+    );
 
     const discountAmount = cart.products.reduce(
       (sum, p) => sum + (p.mrp - p.sellingPrice) * p.qty,
-      0
-    )
+      0,
+    );
 
-    setSubtotal(subTotalAmount)
-    setDiscount(discountAmount)
-    setTotalAmount(subTotalAmount)
+    setSubtotal(subTotalAmount);
+    setDiscount(discountAmount);
+    setTotalAmount(subTotalAmount);
 
-    couponForm.setValue('minShoppingAmount', subTotalAmount)
-  }, [cart.products])
+    couponForm.setValue("minShoppingAmount", subTotalAmount);
+  }, [cart.products]);
 
   /* ---------------- COUPON FORM ---------------- */
 
   const couponSchema = zSchema.pick({
     couponCode: true,
     minShoppingAmount: true,
-  })
+  });
 
   const couponForm = useForm({
     resolver: zodResolver(couponSchema),
     defaultValues: {
-      couponCode: '',
+      couponCode: "",
       minShoppingAmount: 0,
     },
-  })
+  });
+
 
   const applyCoupon = async (values) => {
-    setCouponLoading(true)
-    try {
-      const { data } = await axios.post('/api/coupon/apply', values)
-      if (!data.success) throw new Error(data.message)
+  setCouponLoading(true);
 
-      const discountValue =
-        (subtotal * data.data.discountPercentage) / 100
+  try {
+    const { data } = await axios.post("/api/coupon/apply", {
+      code: values.couponCode, // 🔥 FIXED: send as `code`
+      minShoppingAmount: values.minShoppingAmount,
+    });
 
-      setCouponDiscountAmount(discountValue)
-      setTotalAmount(subtotal - discountValue)
-      setCouponCode(values.couponCode)
-      setIsCouponApplied(true)
+    if (!data.success) throw new Error(data.message);
 
-      showToast('success', data.message)
-    } catch (error) {
-      showToast('error', error.message)
-    } finally {
-      setCouponLoading(false)
-    }
+    const discountValue =
+      (subtotal * data.data.discountPercentage) / 100;
+
+    setCouponDiscountAmount(discountValue);
+    setTotalAmount(subtotal - discountValue);
+    setCouponCode(values.couponCode);
+    setIsCouponApplied(true);
+
+    showToast("success", data.message);
+  } catch (error) {
+    showToast("error", error.response?.data?.message || error.message);
+  } finally {
+    setCouponLoading(false);
   }
+};
+
+  // const applyCoupon = async (values) => {
+  //   setCouponLoading(true);
+  //   try {
+  //     const { data } = await axios.post("/api/coupon/apply", values);
+  //     if (!data.success) throw new Error(data.message);
+
+  //     const discountValue = (subtotal * data.data.discountPercentage) / 100;
+
+  //     setCouponDiscountAmount(discountValue);
+  //     setTotalAmount(subtotal - discountValue);
+  //     setCouponCode(values.couponCode);
+  //     setIsCouponApplied(true);
+
+  //     showToast("success", data.message);
+  //   } catch (error) {
+  //     showToast("error", error.message);
+  //   } finally {
+  //     setCouponLoading(false);
+  //   }
+  // };
 
   const removeCoupon = () => {
-    setIsCouponApplied(false)
-    setCouponCode('')
-    setCouponDiscountAmount(0)
-    setTotalAmount(subtotal)
-  }
+    setIsCouponApplied(false);
+    setCouponCode("");
+    setCouponDiscountAmount(0);
+    setTotalAmount(subtotal);
+  };
 
   /* ---------------- ORDER FORM ---------------- */
 
@@ -142,47 +178,146 @@ const Checkout = () => {
     })
     .extend({
       userId: z.string().optional(),
-    })
+    });
 
   const orderForm = useForm({
     resolver: zodResolver(orderFormSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
-      country: '',
-      state: '',
-      city: '',
-      pincode: '',
-      landmark: '',
-      ordernote: '',
-      userId: auth?._id ?? '',
+      name: "",
+      email: "",
+      phone: "",
+      country: "",
+      state: "",
+      city: "",
+      pincode: "",
+      landmark: "",
+      ordernote: "",
+      userId: auth?.data?.user?.id ?? "",
+      // ...(auth?._id ? { userId: auth._id } : {}) // Only include userId if it exists
     },
-  })
+  });
+
+  // get order id for payment
+  const getOrderId = async (amount) => {
+    try {
+      const { data: orderIdData } = await axios.post(
+        "/api/payment/get-order-id",
+        { amount },
+      );
+      if (!orderIdData.success) throw new Error(orderIdData.message);
+
+      return { success: true, order_id: orderIdData.data };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  };
 
   const placeOrder = async (formData) => {
-    setPlacingOrder(true)
+    setPlacingOrder(true);
     try {
-      console.log('ORDER DATA:', formData)
+      // console.log('ORDER DATA:', formData)
+      // const generateOrderId = await getOrderId(totalAmount);
+      const generateOrderId = await getOrderId(Math.round(totalAmount));
+
+      // console.log(generateOrderId);
+      if(!generateOrderId.success) throw new Error(generateOrderId.message)
+        const order_id = generateOrderId.order_id
+        
+
+      const razOption = {
+        "key": process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Replace with your Razorpay key_id
+        // "amount": totalAmount * 100, // Amount is in currency subunits.
+        "amount": Math.round(totalAmount),
+
+        "currency": 'INR',
+        "name": 'E Store',
+        "description": 'Payment for your order',
+        "image": 'https://res.cloudinary.com/ds4z15u3g/image/upload/v1771165262/logo-black_s9mifm.png',
+        "order_id": order_id, // This is the order_id created in the backend
+        "callback_url": 'http://localhost:3000/payment-success', // Your success URL
+        "handler": async function(response) {
+          setSavingOrder(true)
+            const products = verifiedCartData.map((cartItem)=>({
+              productId: cartItem.productId,
+              variantId: cartItem.variantId,
+              name: cartItem.name,
+              qty: cartItem.qty,
+              mrp: cartItem.mrp,
+              sellingPrice: cartItem.sellingPrice,
+              // totalAmount: totalAmount
+            }))
+
+            const {data: paymentResponseData} = await axios.post('/api/payment/save-order',{
+              // razorpay_payment_id: response.razorpay_payment_id,
+              ...formData, ...response, products: products, subtotal: subtotal, discount: discount, couponDiscountAmount: couponDiscountAmount, totalAmount: totalAmount
+            })
+
+            if(paymentResponseData.success){
+              showToast('success', paymentResponseData.message)
+              dispatch(clearCart())
+              orderForm.reset()
+              router.push(WEBSITE_ROUTE.ORDER_DETAILS(response.razorpay_order_id))
+              setSavingOrder(false)
+            }else{
+              
+              showToast('error', paymentResponseData.message)
+              setSavingOrder(false)
+            }
+        },
+        "prefill": {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone
+        },
+        "theme": {
+          color: '#7c3aed'
+        },
+      };
+
+      // const rzp = new Razorpay(razOption);
+
+      if (!window.Razorpay) {
+  showToast("error", "Razorpay SDK failed to load.");
+  return;
+}
+
+const rzp = new window.Razorpay(razOption);
+
+      rzp.on('payment.failed', function (response){
+        showToast('error', response.error.description );
+      });
+      rzp.open()
     } catch (error) {
-      showToast('error', error.message)
+      showToast("error", error.message);
     } finally {
-      setPlacingOrder(false)
+      setPlacingOrder(false);
     }
-  }
+  };
+
+
 
   /* ---------------- UI ---------------- */
 
   return (
     <div>
+
+      {savingOrder &&
+        <div className="h-screen w-screen fixed top-0 left-0 z-50 bg-black/10">
+                    <div className="h-screen flex justify-center items-center">
+
+                    <Image src={loading} height={80} width={80} alt='loading'/>
+                    <h4 className="font-semibold">Order Confirming</h4>
+
+                    </div>
+        </div>
+      }
+
       <WebsiteBreadCrumb props={breadCrumb} />
 
       {cart.count === 0 ? (
         <div className="w-screen h-[500px] flex justify-center items-center">
           <div className="text-center">
-            <h4 className="text-4xl font-semibold mb-5">
-              Your Cart is Empty!
-            </h4>
+            <h4 className="text-4xl font-semibold mb-5">Your Cart is Empty!</h4>
             <Button>
               <Link href={WEBSITE_ROUTE.SHOP}>Continue Shopping</Link>
             </Button>
@@ -202,14 +337,14 @@ const Checkout = () => {
                 onSubmit={orderForm.handleSubmit(placeOrder)}
               >
                 {[
-                  'name',
-                  'email',
-                  'phone',
-                  'country',
-                  'state',
-                  'city',
-                  'pincode',
-                  'landmark',
+                  "name",
+                  "email",
+                  "phone",
+                  "country",
+                  "state",
+                  "city",
+                  "pincode",
+                  "landmark",
                 ].map((fieldName) => (
                   <FormField
                     key={fieldName}
@@ -236,10 +371,7 @@ const Checkout = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Enter Order Note"
-                          />
+                          <Textarea {...field} placeholder="Enter Order Note" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -260,9 +392,87 @@ const Checkout = () => {
           {/* ---------------- ORDER SUMMARY ---------------- */}
           <div className="lg:w-[40%] w-full sticky top-5">
             <div className="rounded bg-gray-50 p-5">
-              <h4 className="text-lg font-semibold mb-5">
-                Order Summary
-              </h4>
+              <h4 className="text-lg font-semibold mb-5">Order Summary</h4>
+
+              {/* Products List */}
+              <div className="space-y-4 mb-5">
+                {verifiedCartData?.map((product) => (
+                  <div
+                    key={product.variantId}
+                    className="flex justify-between items-center"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={product.media}
+                        width={60}
+                        height={60}
+                        alt={product.name}
+                        className="rounded"
+                      />
+
+                      <div>
+                        <p className="font-medium line-clamp-1">
+                          {product.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {product.qty} × ₹{product.sellingPrice}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="font-semibold">
+                      ₹
+                      {(product.qty * product.sellingPrice).toLocaleString(
+                        "en-IN",
+                      )}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t pt-4 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>
+                    {subtotal.toLocaleString("en-IN", {
+                      style: "currency",
+                      currency: "INR",
+                    })}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>Discount</span>
+                  <span className="text-green-600">
+                    -{" "}
+                    {discount.toLocaleString("en-IN", {
+                      style: "currency",
+                      currency: "INR",
+                    })}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>Coupon Discount</span>
+                  <span className="text-green-600">
+                    -{" "}
+                    {couponDiscountAmount.toLocaleString("en-IN", {
+                      style: "currency",
+                      currency: "INR",
+                    })}
+                  </span>
+                </div>
+
+                <div className="flex justify-between font-semibold text-lg border-t pt-3">
+                  <span>Total</span>
+                  <span>
+                    {totalAmount.toLocaleString("en-IN", {
+                      style: "currency",
+                      currency: "INR",
+                    })}
+                  </span>
+                </div>
+              </div>
 
               {/* Coupon */}
               {!isCouponApplied ? (
@@ -277,10 +487,7 @@ const Checkout = () => {
                       render={({ field }) => (
                         <FormItem className="flex-1">
                           <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Enter Coupon Code"
-                            />
+                            <Input {...field} placeholder="Enter Coupon Code" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -308,15 +515,17 @@ const Checkout = () => {
           </div>
         </div>
       )}
+      {/*<Script src="https://checkout.razorpay.com/v1/checkout.js"/>*/}
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        // strategy="lazyOnload"
+      />
+
     </div>
-  )
-}
+  );
+};
 
-export default Checkout
-
-
-
-
+export default Checkout;
 
 // 'use client'
 // import ButtonLoading from '@/components/Application/ButtonLoading';
@@ -374,9 +583,8 @@ export default Checkout
 //         //   dispatch(addInToCart(cartItem))
 //         // });
 //       }
-    
-//     }, [getVerifiedCartData])
 
+//     }, [getVerifiedCartData])
 
 //     useEffect(()=>{
 //           const cartProducts = cart.products
@@ -388,7 +596,7 @@ export default Checkout
 
 //           couponForm.setValue('minShoppingAmount', subTotalAmount)
 //         },[cart])
-    
+
 //     const couponSchema = zSchema.pick({
 //       code: true,
 //       minShoppingAmount: true
@@ -498,7 +706,7 @@ export default Checkout
 //                              <Form {...orderForm}>
 //                                 <form className='grid grid-cols-2 gap-5' onSubmit={orderForm.handleSubmit(placeOrder)}>
 //                                     <div className='w-[calc(100%-100px)]'>
-//                                         <FormField control={orderForm.control} name='name' 
+//                                         <FormField control={orderForm.control} name='name'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -511,7 +719,7 @@ export default Checkout
 //                                         </FormField>
 //                                     </div>
 //                                     <div className='w-[calc(100%-100px)]'>
-//                                         <FormField control={orderForm.control} name='email' 
+//                                         <FormField control={orderForm.control} name='email'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -524,7 +732,7 @@ export default Checkout
 //                                         </FormField>
 //                                     </div>
 //                                     <div className='w-[calc(100%-100px)]'>
-//                                         <FormField control={orderForm.control} name='phone' 
+//                                         <FormField control={orderForm.control} name='phone'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -537,7 +745,7 @@ export default Checkout
 //                                         </FormField>
 //                                     </div>
 //                                     <div className='w-[calc(100%-100px)]'>
-//                                         <FormField control={orderForm.control} name='country' 
+//                                         <FormField control={orderForm.control} name='country'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -550,7 +758,7 @@ export default Checkout
 //                                         </FormField>
 //                                     </div>
 //                                     <div className='w-[calc(100%-100px)]'>
-//                                         <FormField control={orderForm.control} name='state' 
+//                                         <FormField control={orderForm.control} name='state'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -563,7 +771,7 @@ export default Checkout
 //                                         </FormField>
 //                                     </div>
 //                                     <div className='w-[calc(100%-100px)]'>
-//                                         <FormField control={orderForm.control} name='city' 
+//                                         <FormField control={orderForm.control} name='city'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -576,7 +784,7 @@ export default Checkout
 //                                         </FormField>
 //                                     </div>
 //                                     <div className='w-[calc(100%-100px)]'>
-//                                         <FormField control={orderForm.control} name='pincode' 
+//                                         <FormField control={orderForm.control} name='pincode'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -589,7 +797,7 @@ export default Checkout
 //                                         </FormField>
 //                                     </div>
 //                                     <div className='w-[calc(100%-100px)]'>
-//                                         <FormField control={orderForm.control} name='landmark' 
+//                                         <FormField control={orderForm.control} name='landmark'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -602,7 +810,7 @@ export default Checkout
 //                                         </FormField>
 //                                     </div>
 //                                     <div className='mb-3 col-span-2'>
-//                                         <FormField control={orderForm.control} name='ordernote' 
+//                                         <FormField control={orderForm.control} name='ordernote'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -623,9 +831,6 @@ export default Checkout
 //                             </Form>
 //                       </div>
 //           </div>
-
-
-
 
 //           <div className="lg:w-[70%] w-full">
 //             <div className="rounded bg-gray-50 p-5 sticky top-5">
@@ -676,13 +881,13 @@ export default Checkout
 //                             </tr>
 //                         </tbody>
 //                     </table>
-                    
+
 //                     <div className='mt-2 mb-5'>
-//                           {!isCouponApplied ? 
+//                           {!isCouponApplied ?
 //                             <Form {...couponForm}>
 //                                 <form className='flex justify-between gap-5' onSubmit={couponForm.handleSubmit(applyCoupon)}>
 //                                     <div className='w-[calc(100%-100px)]'>
-//                                         <FormField control={couponForm.control} name='code' 
+//                                         <FormField control={couponForm.control} name='code'
 //                                         render={({field})=>(
 //                                           <FormItem>
 //                                               <FormControl>
@@ -710,7 +915,7 @@ export default Checkout
 //                             </div>
 //                         }
 //                     </div>
-                    
+
 //                 </div>
 //             </div>
 //           </div>
