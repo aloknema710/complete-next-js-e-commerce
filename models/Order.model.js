@@ -46,7 +46,7 @@ const orderSchema = new mongoose.Schema({
     products: [
         {
             productId: {type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true},
-            variantId: {type: mongoose.Schema.Types.ObjectId, ref: 'Variant', required: true},
+            variantId: {type: mongoose.Schema.Types.ObjectId, ref: 'ProductVariant', required: true},
             name: {type: String, required: true},
             qty: {type: Number, required: true},
             mrp: {type: Number, required: true},

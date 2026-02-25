@@ -62,7 +62,7 @@ export async function POST(request) {
         if(!paymentVerification) return response(false,400,'Payment verification failed.')
 
         const newOrder = await OrderModel.create({
-            // user: validatedData.userId,
+            user: validatedData.userId,
             name: validatedData.name,
             email: validatedData.email,
             phone: validatedData.phone,

@@ -42,8 +42,8 @@ const Checkout = () => {
   const router = useRouter()
   const dispatch = useDispatch();
   const cart = useSelector((store) => store.cartStore);
-  const auth = useSelector((store) => store.authStore);
-  console.log('Auth in checkout page:', auth)
+  const authStore = useSelector((store) => store.authStore);
+  console.log('Auth in checkout page:', authStore)
 
   const [savingOrder,setSavingOrder]= useState(false)
   const [verifiedCartData, setVerifiedCartData] = useState([]);
@@ -192,10 +192,14 @@ const Checkout = () => {
       pincode: "",
       landmark: "",
       ordernote: "",
-      userId: auth?.data?.user?.id ?? "",
+      userId: authStore?.auth?.data?.user?.id ?? "",
       // ...(auth?._id ? { userId: auth._id } : {}) // Only include userId if it exists
     },
   });
+
+  useEffect(()=>{
+    orderForm.setValue('userId', authStore?.auth?.data?.user?.id ?? '')
+  },[authStore])
 
   // get order id for payment
   const getOrderId = async (amount) => {
@@ -213,6 +217,7 @@ const Checkout = () => {
   };
 
   const placeOrder = async (formData) => {
+    // console.log("Form Data:", formData);
     setPlacingOrder(true);
     try {
       // console.log('ORDER DATA:', formData)

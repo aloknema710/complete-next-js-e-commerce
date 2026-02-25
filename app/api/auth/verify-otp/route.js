@@ -28,7 +28,7 @@ export async function POST(request) {
         }
 
         const loggedInUserData = {
-            id: getUser._id,
+            id: getUser._id.toString(), // Convert ObjectId to string
             role: getUser.role,
             name: getUser.name,
             avatar: getUser.avatar?.url || "",
