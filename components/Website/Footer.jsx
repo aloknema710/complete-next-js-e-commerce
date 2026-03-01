@@ -28,37 +28,37 @@ const Footer = () => {
                 </p>
             </div>
 
-            <div>
+            <div className='mt-2'>
                 <h4 className='text-xl font-bold uppercase mb-5'>Categories</h4>
                 <ul>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>Tshirt</Link>
+                    <Link href={`${WEBSITE_ROUTE.SHOP}?category=t-shirt`}>Tshirt</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>Hoodies</Link>
+                    <Link href={`${WEBSITE_ROUTE.SHOP}?category=hoodie`}>Hoodies</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>OverSized</Link>
+                    <Link href={`${WEBSITE_ROUTE.SHOP}?category=oversized`}>OverSized</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>Full Sleeved</Link>
+                    <Link href={`${WEBSITE_ROUTE.SHOP}?category=full-sleeves`}>Full Sleeved</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>Polo</Link>
+                    <Link href={`${WEBSITE_ROUTE.SHOP}?category=polo`}>Polo</Link>
                   </li>
                 </ul>
             </div>
-            <div>
+            <div className='mt-2'>
                 <h4 className='text-xl font-bold uppercase mb-5'>Useful Links</h4>
                 <ul>
                   <li className='mb-2 text-gray-500'>
                     <Link href={WEBSITE_ROUTE.HOME}>Home</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>Shop</Link>
+                    <Link href={WEBSITE_ROUTE.SHOP}>Shop</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>About</Link>
+                    <Link href='/about-us'>About</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
                     <Link href={WEBSITE_ROUTE.REGISTER}>Register</Link>
@@ -68,27 +68,27 @@ const Footer = () => {
                   </li>
                 </ul>
             </div>
-            <div>
+            <div className='mt-2'>
                 <h4 className='text-xl font-bold uppercase mb-5'>Help Center</h4>
                 <ul>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>Register</Link>
+                    <Link href={WEBSITE_ROUTE.REGISTER}>Register</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>Login</Link>
+                    <Link href={WEBSITE_ROUTE.LOGIN}>Login</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>My Account</Link>
+                    <Link href={WEBSITE_ROUTE.USER_DASHBOARD}>My Account</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>Privacy Policy</Link>
+                    <Link href='/privacy-policy'>Privacy Policy</Link>
                   </li>
                   <li className='mb-2 text-gray-500'>
-                    <Link href=''>Terms & Consitions</Link>
+                    <Link href='/terms-and-conditions'>Terms & Conditions</Link>
                   </li>
                 </ul>
             </div>
-            <div>
+            <div className='mt-2'>
                 <h4 className='text-xl font-bold uppercase mb-5'>Contact Us</h4>
                 <ul>
                   <li className='mb-2 text-gray-500 flex gap-2'>

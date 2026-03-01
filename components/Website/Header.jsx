@@ -36,11 +36,11 @@ const Header = () => {
                     </div>
                     <ul className='lg:flex justify-between items-center gap-10 px-3'>
                         <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href={WEBSITE_ROUTE.HOME}>Home</Link></li>
-                        <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href=''>About</Link></li>
+                        <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href='/about-us'>About</Link></li>
                         <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href={WEBSITE_ROUTE.SHOP}>Shop</Link></li>
-                        <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href=''>T-shirt</Link></li>
-                        <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href=''>Hoodies</Link></li>
-                        <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href=''>Oversized</Link></li>
+                        <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href={`${WEBSITE_ROUTE.SHOP}?category=t-shirt`}>T-shirt</Link></li>
+                        <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href={`${WEBSITE_ROUTE.SHOP}?category=hoodie`}>Hoodies</Link></li>
+                        <li className=' text-gray-600 hover:text-primary hover:font-semibold'><Link href={`${WEBSITE_ROUTE.SHOP}?category=oversized`}>Oversized</Link></li>
                     </ul>
                 </nav>
                 <div className='flex justify-between items-center gap-8'>
