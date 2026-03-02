@@ -63,6 +63,7 @@ export async function POST(request) {
 
         const newOrder = await OrderModel.create({
             user: validatedData.userId,
+            // ...(validatedData.userId && { user: validatedData.userId }),
             name: validatedData.name,
             email: validatedData.email,
             phone: validatedData.phone,

@@ -192,13 +192,13 @@ const Checkout = () => {
       pincode: "",
       landmark: "",
       ordernote: "",
-      userId: authStore?.auth?.data?.user?.id ?? "",
+      userId: authStore?.auth?._id ?? "",
       // ...(auth?._id ? { userId: auth._id } : {}) // Only include userId if it exists
     },
   });
 
   useEffect(()=>{
-    orderForm.setValue('userId', authStore?.auth?.data?.user?.id ?? '')
+    orderForm.setValue('userId', authStore?.auth?._id ?? '')
   },[authStore])
 
   // get order id for payment
@@ -217,7 +217,7 @@ const Checkout = () => {
   };
 
   const placeOrder = async (formData) => {
-    // console.log("Form Data:", formData);
+    console.log("Form Data:", formData);
     setPlacingOrder(true);
     try {
       // console.log('ORDER DATA:', formData)
