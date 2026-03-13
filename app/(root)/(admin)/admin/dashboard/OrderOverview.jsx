@@ -17,6 +17,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import useFetch from "@/hooks/useFetch"
+import { useEffect, useState } from "react"
 
 export const description = "A bar chart"
 
@@ -35,6 +37,21 @@ const chartData = [
   { month: "December", amount: 597 },
 ]
 
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+]
+
 const chartConfig = {
   amount: {
     label: "Amount",
@@ -43,6 +60,25 @@ const chartConfig = {
 }
 
 export function OrderOverview() {
+    const [chartData, setChartData] = useState([])
+    const {data: monthlySales, loading} = useFetch('/api/dashboard/admin/monthly-sales')
+    
+    useEffect(()=>{
+      if(monthlySales && monthlySales.success) {
+        // console.log('monthlysales',monthlySales.data)
+        const getChartData = months.map((month,index)=>{
+          const monthData = monthlySales.data.find(item=>item._id.month === index + 1)
+          return{
+            month: month,
+            amount: monthData ? monthData.totalSales : 0
+          }
+        })
+        setChartData(getChartData)
+      }
+    },[monthlySales])
+
+    console.log('chartData',chartData)
+  
   return (
     <div>
         <ChartContainer config={chartConfig}>

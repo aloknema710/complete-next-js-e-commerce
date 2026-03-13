@@ -1,39 +1,88 @@
-import WebsiteBreadCrumb from '@/components/Website/WebsiteBreadCrumb'
+'use client'
 import axios from 'axios'
-import React from 'react'
+import React, { use, useEffect, useState } from 'react'
 import placeholderImg from '@/public/assets/images/img-placeholder.webp'
 import Image from 'next/image'
 import Link from 'next/link'
 import { WEBSITE_ROUTE } from '@/routes/WebsiteRoute'
+import useFetch from '@/hooks/useFetch'
+import { ADMIN_DASHBOARD, ADMIN_ORDER_SHOW } from '@/routes/AdminPanelRoute'
+import BreadCrumbs from '@/components/Admin/BreadCrumb'
+import Select from '@/components/Application/Select'
+import ButtonLoading from '@/components/Application/ButtonLoading'
+import { showToast } from '@/lib/showToast'
+// import { Select } from '@/components/ui/select'
 
-const OrderDetails = async({params}) => {
-    const {orderid} = await params
-    const {data:orderData} = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders/get/${orderid}`)
-    console.log(orderData)
-    const breadcrumb = {
-      title: 'Order Details',
-      links: [{ label: 'Order Details' }]
+const breadcrumbData = [
+    { href: ADMIN_DASHBOARD, label: 'Home'},
+    { href: ADMIN_ORDER_SHOW, label: 'Orders'},
+    { href: '', label: 'Order Details'},
+]
+
+const statusOptions = [
+  {label: 'Pending', value:'pending'},
+  {label: 'Processing', value: 'processing'},
+  {label: 'Shipped', value: 'shipped'},
+  {label: 'Delivered', value: 'delivered'},
+  {label: 'Cancelled', value: 'cancelled'},
+  {label: 'Unverified', value: 'unverified'},
+]
+
+const OrderDetails = ({params}) => {
+    const {order_id} =  use(params)
+    const [orderData, setOrderData] = useState()
+    const [orderStatus, setOrderStatus] = useState()
+    const [updatingStatus, setUpdatingStatus] = useState(false)
+    const {data, loading} = useFetch(`/api/orders/get/${order_id}`)
+    // const {data:orderData} = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders/get/${orderid}`)
+    console.log('data',data)
+    
+    useEffect(()=>{
+      if(data && data.success){
+        setOrderData(data.data);
+        setOrderStatus(data?.data?.status)
+      } 
+    },[data])
+
+    const handleOrderStatus = async() =>{
+      setUpdatingStatus(true)
+      try {
+        const {data: response} = await axios.put('/api/orders/update-status',{
+          _id: orderData?._id,
+          status: orderStatus
+        })
+        if(!response.success) throw new Error(response.message)
+        showToast('success', response.message)
+      } catch (error) {
+        showToast('error', error.message)
+      } finally{
+        setUpdatingStatus(false)
+      }
     }
-
 
   return (
     <div>
         {/* <WebsiteBreadCrumb props={breadcrumb}/> */}
-        <WebsiteBreadCrumb props={breadcrumb} />
-        <div className='lg:px-32 px-5 my-20'>
-          {orderData && !orderData.success ?
+        {/* <Breadcrumb breadcrumbData={breadcrumbData} /> */}
+                <BreadCrumbs breadcrumbData={breadcrumbData}/>
+        <div className=' px-5 my-20 border'>
+          {!orderData ?
             <div className='flex justify-center items-center py-32'>
                <h4 className='text-red-500 text-xl font-semibold'>Order not Found</h4>
             </div>
             :
-            <div>
-              <div className='mb-5'>
-                <p><b>Order ID: {orderData?.data?.order_id}</b></p>
-                <p><b>Transaction Id:</b>{orderData?.data?.payment_id}</p>
-                <p className='capitalize'><b>Status:</b>{orderData?.data?.status}</p>
+            <div className=''>
+              <div className='px-5'>
+                <h4 className='py-2 px-5 text-lg font-bold text-primary'>Order Details</h4>
+              </div>
+              <div>
+                <div className='mb-5'>
+                <p><b>Order ID: {orderData?.order_id}</b></p>
+                <p><b>Transaction Id:</b>{orderData?.payment_id}</p>
+                <p className='capitalize'><b>Status:</b>{orderData?.status}</p>
               </div>
               <table className="w-full border">
-                <thead className="border-b bg-gray-50 md:table-header-group hidden">
+                <thead className="border-b dark:bg-card bg-gray-50 md:table-header-group hidden">
                   <tr>
                   <th className="text-start p-3">Product</th>
                   <th className="text-center p-3">Price</th>
@@ -42,13 +91,13 @@ const OrderDetails = async({params}) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {orderData && orderData?.data?.products?.map((product)=>(
+                  {orderData && orderData?.products?.map((product)=>(
                     <tr key={product.variantId._id} className='md:table-row block border-b'>
-                      <td className='p-3 flex'>
+                      <td className='p-3 md:table-cell flex'>
                         <div className='flex items-center gap-5'>
                             <Image src={product?.variantId?.media[0]?.secure_url || placeholderImg} width={60} height={60} alt='product' className='rounded'/>
                             <div>
-                              <h4 className='text-lg line-clamp-1'>
+                              <h4 className='text-lg '>
                                 <Link href={WEBSITE_ROUTE.PRODUCT_DETAILS(product?.productId?.slug)}>{product?.productId?.name}</Link>
                                 <p>Color:{product?.variantId?.color}</p>
                                 <p>Size:{product?.variantId?.size}</p>
@@ -81,74 +130,84 @@ const OrderDetails = async({params}) => {
                       <tbody>
                         <tr>
                           <td className='font-medium py-2'>Name</td>
-                          <td className='text-end py-2'>{orderData?.data?.name}</td>
+                          <td className='text-end py-2'>{orderData?.name}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>Email</td>
-                          <td className='text-end py-2'>{orderData?.data?.email}</td>
+                          <td className='text-end py-2'>{orderData?.email}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>Phone</td>
-                          <td className='text-end py-2'>{orderData?.data?.phone}</td>
+                          <td className='text-end py-2'>{orderData?.phone}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>Country</td>
-                          <td className='text-end py-2'>{orderData?.data?.country}</td>
+                          <td className='text-end py-2'>{orderData?.country}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>State</td>
-                          <td className='text-end py-2'>{orderData?.data?.state}</td>
+                          <td className='text-end py-2'>{orderData?.state}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>City</td>
-                          <td className='text-end py-2'>{orderData?.data?.city}</td>
+                          <td className='text-end py-2'>{orderData?.city}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>pincode</td>
-                          <td className='text-end py-2'>{orderData?.data?.pincode}</td>
+                          <td className='text-end py-2'>{orderData?.pincode}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>LandMark</td>
-                          <td className='text-end py-2'>{orderData?.data?.landmark}</td>
+                          <td className='text-end py-2'>{orderData?.landmark}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>OrderNote</td>
-                          <td className='text-end py-2'>{orderData?.data?.ordernote || '---'}</td>
+                          <td className='text-end py-2'>{orderData?.ordernote || '---'}</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
-                <div className="p-5 bg-gray-50">
+                <div className="p-5 bg-gray-50 dark:bg-card">
                   <h4 className='text-lg font-semibold'>Order Summary</h4>
-                  <div>
+                  <div className='px-5'>
                     <table className='w-full'>
                       <tbody>
                         <tr>
                           <td className='font-medium py-2'>Sub Total</td>
-                          <td className='text-end py-2'>{orderData?.data?.totalAmount.toLocaleString('en-IN',{style: 'currency', currency:'INR'})}</td>
+                          <td className='text-end py-2'>{orderData?.totalAmount.toLocaleString('en-IN',{style: 'currency', currency:'INR'})}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>Discount</td>
-                          <td className='text-end py-2'>{orderData?.data?.discount.toLocaleString('en-IN',{style: 'currency', currency:'INR'})}</td>
+                          <td className='text-end py-2'>{orderData?.discount.toLocaleString('en-IN',{style: 'currency', currency:'INR'})}</td>
                         </tr>
                         <tr>
                           <td className='font-medium py-2'>Coupon Discount</td>
                           <td className='text-end py-2'>
-                            {orderData?.data?.couponDiscountAmount != null
-                              ? orderData.data.couponDiscountAmount.toLocaleString('en-IN', { style: 'currency', currency:'INR' })
+                            {orderData?.couponDiscountAmount != null
+                              ? orderData.couponDiscountAmount.toLocaleString('en-IN', { style: 'currency', currency:'INR' })
                               : '---'}
                           </td>
                         </tr>
                         
                         <tr>
                           <td className='font-medium py-2'>Total</td>
-                          <td className='text-end py-2'>{orderData?.data?.totalAmount.toLocaleString('en-IN',{style: 'currency', currency:'INR'})}</td>
+                          <td className='text-end py-2'>{orderData?.totalAmount.toLocaleString('en-IN',{style: 'currency', currency:'INR'})}</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
+
+                  <hr />
+
+                  <div className='pt-3'>
+                    <h4 className='text-lg font-semibold mb-2'>Order Status</h4>
+                    <Select  options={statusOptions} selected={orderStatus} setSelected={(value)=> setOrderStatus(value)}
+                      placeholder='select' isMulti={false}/>
+                    <ButtonLoading loading={updatingStatus} type={'button'} onClick={handleOrderStatus} text={'Save Status'} className={'mt-5 cursor-pointer'}/>
+                  </div>
                 </div>
+              </div>
               </div>
 
             </div>

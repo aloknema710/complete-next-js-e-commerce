@@ -15,7 +15,7 @@ import ViewAction from '@/components/Admin/EditAction copy'
 
 const breadcrumbData = [
     { href: ADMIN_DASHBOARD, label: 'Home'},
-    { href: ADMIN_COUPON_SHOW, label: 'Order'},
+    { href: '', label: 'Order'},
 ]
 
 const ShowOrder = () => {

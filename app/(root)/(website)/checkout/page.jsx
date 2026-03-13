@@ -44,6 +44,7 @@ const Checkout = () => {
   const cart = useSelector((store) => store.cartStore);
   const authStore = useSelector((store) => store.authStore);
   console.log('Auth in checkout page:', authStore)
+  console.log("UserId:", authStore?.auth?.data?.user?.id);
 
   const [savingOrder,setSavingOrder]= useState(false)
   const [verifiedCartData, setVerifiedCartData] = useState([]);
@@ -192,13 +193,15 @@ const Checkout = () => {
       pincode: "",
       landmark: "",
       ordernote: "",
-      userId: authStore?.auth?._id ?? "",
+      userId: authStore?.auth?.data?.user?.id
+      // userId: authStore?.auth?._id ?? "",
       // ...(auth?._id ? { userId: auth._id } : {}) // Only include userId if it exists
     },
   });
 
   useEffect(()=>{
-    orderForm.setValue('userId', authStore?.auth?._id ?? '')
+    // orderForm.setValue('userId', authStore?.auth?._id ?? '')
+    orderForm.setValue('userId', authStore?.auth?.data?.user?.id ?? '')
   },[authStore])
 
   // get order id for payment
@@ -220,7 +223,7 @@ const Checkout = () => {
     console.log("Form Data:", formData);
     setPlacingOrder(true);
     try {
-      // console.log('ORDER DATA:', formData)
+      console.log('ORDER DATA:', formData)
       // const generateOrderId = await getOrderId(totalAmount);
       const generateOrderId = await getOrderId(Math.round(totalAmount));
 
