@@ -1,9 +1,14 @@
 import { isAuthenticated } from "@/lib/authentication";
 import { connectDB } from "@/lib/databaseConnection";
 import { catchError } from "@/lib/helperFunction";
+import CategoryModel from "@/models/Category.model";
+import ProductModel from "@/models/Product.model";
 import ReviewModel from "@/models/Review.Model";
+import UserModel from "@/models/User.model";
 import { NextResponse } from "next/server";
-
+// ProductModel
+// CategoryModel
+// UserModel
 export async function GET(request) {
   try {
     const auth = await isAuthenticated("admin");
@@ -108,6 +113,8 @@ export async function GET(request) {
     //execute query
     const getReview = await ReviewModel.aggregate(aggregatePipeline)
     const totalRowCount = await ReviewModel.countDocuments(matchQuery)
+
+    console.log(getReview)
 
     return NextResponse.json({
       success: true,
