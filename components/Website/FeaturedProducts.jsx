@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getApiBaseUrl } from '@/lib/apiBaseUrl'
 import Link from 'next/link'
 import React from 'react'
 import { IoIosArrowRoundForward  } from 'react-icons/io'
@@ -7,7 +8,7 @@ import ProductBox from './ProductBox'
 const FeaturedProducts = async() => {
     let productData = null
     try {
-        const {data} = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/product/get-featured-product`)
+        const {data} = await axios.get(`${getApiBaseUrl()}/product/get-featured-product`)
         // console.log(productData)
         productData = data
     } catch (error) {

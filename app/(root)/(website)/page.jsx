@@ -13,6 +13,9 @@ import {FaShippingFast} from "react-icons/fa"
 import {BiSupport} from "react-icons/bi"
 import {TbRosetteDiscountFilled} from "react-icons/tb"
 
+/** Avoid build-time fetches in FeaturedProducts (no server at localhost during `next build`). */
+export const dynamic = 'force-dynamic'
+
 const Home = () => {
   return (
     <>

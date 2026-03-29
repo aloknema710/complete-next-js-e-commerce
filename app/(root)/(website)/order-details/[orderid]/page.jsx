@@ -1,5 +1,6 @@
 import WebsiteBreadCrumb from '@/components/Website/WebsiteBreadCrumb'
 import axios from 'axios'
+import { getApiBaseUrl } from '@/lib/apiBaseUrl'
 import React from 'react'
 import placeholderImg from '@/public/assets/images/img-placeholder.webp'
 import Image from 'next/image'
@@ -8,7 +9,7 @@ import { WEBSITE_ROUTE } from '@/routes/WebsiteRoute'
 
 const OrderDetails = async({params}) => {
     const {orderid} = await params
-    const {data:orderData} = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders/get/${orderid}`)
+    const {data:orderData} = await axios.get(`${getApiBaseUrl()}/orders/get/${orderid}`)
     console.log(orderData)
     const breadcrumb = {
       title: 'Order Details',

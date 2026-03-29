@@ -1,12 +1,13 @@
 import React from 'react'
 import axios from 'axios'
+import { getApiBaseUrl } from '@/lib/apiBaseUrl'
 import ProductDetail from './ProductDetail'
 
 const ProductPage = async ({ params, searchParams }) => {
   const { slug } = await params
   const { color, size } = await searchParams || {}
 
-  let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/product/details/${slug}`
+  let url = `${getApiBaseUrl()}/product/details/${slug}`
 
   if (color && size) {
     url += `?color=${color}&size=${size}`
