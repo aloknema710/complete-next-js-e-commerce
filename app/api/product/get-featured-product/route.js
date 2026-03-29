@@ -10,7 +10,7 @@ export async function GET() {
        
         await connectDB()
         
-        const getProduct = await ProductModel.find({ deleteType: null }).populate('media', '_id secure_url').limit(8).lean()
+        const getProduct = await ProductModel.find({ deletedAt: null }).populate('media', '_id secure_url').limit(8).lean()
         if(!getProduct){
             return response(false, 404, 'Product Not Found')
         }
